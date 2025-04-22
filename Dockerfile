@@ -1,27 +1,28 @@
-# ✅ Imagen base de Python
 FROM python:3.11-slim
 
-# ✅ Actualiza e instala librerías necesarias
+# Instala dependencias del sistema
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-spa \
     libglib2.0-0 \
     libsm6 \
-    libxrender1 \
     libxext6 \
-    libgl1 \
-    && apt-get clean \
+    libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# ✅ Instalar dependencias de Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Establece directorio de trabajo
+WORKDIR /app
 
-# ✅ Copiar el resto del código
+# Copia archivos
 COPY . .
 
-# ✅ Exponer puerto
-EXPOSE 5000
+# Instala dependencias de Python
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# ✅ Iniciar servidor
-CMD ["python", "app.py"]
+# Expone el puerto estándar para Render
+EXPOSE 10000
+
+# Usa gunicorn para producción
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
+
