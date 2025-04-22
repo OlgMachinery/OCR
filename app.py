@@ -5,6 +5,8 @@ import tempfile
 import os
 import traceback
 
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
 app = Flask(__name__)
 
 @app.route("/ping", methods=["GET"])
