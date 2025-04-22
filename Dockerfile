@@ -1,19 +1,17 @@
-FROM python:3.11-slim
+# Usa una imagen base ligera
+FROM python:3.9-slim
 
-# Instala dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-spa \
-    libgl1 \
-    libglib2.0-0 \
-    && apt-get clean
-
-# Copiar archivos al contenedor
+# Establece el directorio de trabajo
 WORKDIR /app
-COPY . /app
 
-# Instalar dependencias Python
+# Copia los archivos del proyecto
+COPY . .
+
+# Instala dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# CORREGIDO: ejecutar gunicorn con shell para que lea $PORT correctamente
-CMD gunicorn -b 0.0.0.0:$PORT app:app
+# Expone el puerto para Render (usará una variable de entorno $PORT)
+EXPOSE $PORT
+
+# Comando para correr el servidor con Flask (más ligero que Gunicorn)
+CMD ["flask", "run", "--host=0.0.0.0", "--port=$PORT"]
