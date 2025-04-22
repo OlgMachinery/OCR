@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Instala dependencias del sistema necesarias para Tesseract y OpenCV
+# Instala dependencias del sistema
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-spa \
@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && apt-get clean
 
-# Copia el código de la app
+# Copiar archivos al contenedor
 WORKDIR /app
 COPY . /app
 
-# Instala dependencias de Python
+# Instalar dependencias Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Render define la variable de entorno PORT, la usaremos para correr gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:$PORT", "app:app"]
+# CORREGIDO: ejecutar gunicorn con shell para que lea $PORT correctamente
+CMD gunicorn -b 0.0.0.0:$PORT app:app
