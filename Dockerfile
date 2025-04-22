@@ -1,25 +1,21 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Instala Tesseract + español + OpenCV dependencias
+# Instala dependencias del sistema necesarias para OpenCV y Tesseract
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-spa \
-    libsm6 libxext6 libxrender-dev \
-    build-essential \
-    && apt-get clean \
+    libglib2.0-0 libsm6 libxext6 libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Crea y entra al directorio de trabajo
+# Crea directorio de trabajo
 WORKDIR /app
 
 # Copia los archivos
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY app.py .
 
-# Expone el puerto de Flask
+# Expone el puerto y ejecuta la app
 EXPOSE 5000
-
-# Comando de inicio
 CMD ["python", "app.py"]
