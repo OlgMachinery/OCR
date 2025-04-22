@@ -1,21 +1,27 @@
+# ✅ Imagen base de Python
 FROM python:3.11-slim
 
-# Instala dependencias del sistema necesarias para OpenCV y Tesseract
+# ✅ Actualiza e instala librerías necesarias
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-spa \
-    libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    libgl1 \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Crea directorio de trabajo
-WORKDIR /app
-
-# Copia los archivos
+# ✅ Instalar dependencias de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
+# ✅ Copiar el resto del código
+COPY . .
 
-# Expone el puerto y ejecuta la app
+# ✅ Exponer puerto
 EXPOSE 5000
+
+# ✅ Iniciar servidor
 CMD ["python", "app.py"]
