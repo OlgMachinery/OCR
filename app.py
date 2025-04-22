@@ -48,3 +48,7 @@ def ocr():
             os.remove(img_path)
         if processed_path and os.path.exists(processed_path):
             os.remove(processed_path)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))  # Render inyecta PORT
+    app.run(host="0.0.0.0", port=port)
