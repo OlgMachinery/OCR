@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Instala dependencias del sistema
+# Instala Tesseract con soporte en español y otras dependencias necesarias
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-spa \
@@ -10,19 +10,18 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Establece directorio de trabajo
+# Crea directorio de trabajo
 WORKDIR /app
 
-# Copia archivos
+# Copia archivos del proyecto
 COPY . .
 
 # Instala dependencias de Python
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Expone el puerto estándar para Render
+# Expone el puerto que usará gunicorn
 EXPOSE 10000
 
 # Usa gunicorn para producción
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
-
