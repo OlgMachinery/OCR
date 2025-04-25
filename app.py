@@ -28,29 +28,27 @@ def ocr():
         if image is None:
             raise Exception("Failed to read image with OpenCV")
 
-        # 🔧 Preprocesamiento mejorado
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # 🖼️ Redimensiona si es muy grande
+        max_width = 1600
+        if image.shape[1] > max_width:
+            scale = max_width / image.shape[1]
+            new_size = (max_width, int(image.shape[0] * scale))
+            image = cv2.resize(image, new_size)
 
-        # Aumenta el contraste local (ideal para metal gastado o etiquetas brillantes)
+        # Preprocesamiento mejorado
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
         gray = clahe.apply(gray)
-
-        # Suavizado conservando bordes, ideal para letras finas
         gray = cv2.bilateralFilter(gray, 11, 17, 17)
-
-        # Binarización adaptativa (mejor que fijo con Otsu en muchos casos)
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         processed_path = img_path.replace(".png", "_processed.png")
         cv2.imwrite(processed_path, thresh)
 
-        # 🔤 OCR con idiomas mixtos (inglés + español técnico)
         config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(processed_path, lang='eng+spa', config=config)
 
-        return jsonify({
-            "text": text.strip()
-        })
+        return jsonify({"text": text.strip()})
 
     except Exception as e:
         print("🔥 OCR ERROR:")
