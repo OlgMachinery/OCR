@@ -28,25 +28,14 @@ def ocr():
         if image is None:
             raise Exception("Failed to read image with OpenCV")
 
-        # Preprocesamiento optimizado para placas industriales
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Mejora de contraste local adaptativo
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        gray = clahe.apply(gray)
-
-        # Suaviza sin perder bordes
-        gray = cv2.bilateralFilter(gray, 11, 17, 17)
-
-        # Binarización automática
+        gray = cv2.fastNlMeansDenoising(gray, h=10)
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         processed_path = img_path.replace(".png", "_processed.png")
         cv2.imwrite(processed_path, thresh)
 
-        # OCR configurado con mejor reconocimiento de términos técnicos
-        config = r'--oem 3 --psm 6'
-        text = pytesseract.image_to_string(processed_path, lang='eng+spa', config=config)
+        text = pytesseract.image_to_string(processed_path, lang='spa')
 
         return jsonify({"text": text.strip()})
 
@@ -61,6 +50,8 @@ def ocr():
         if processed_path and os.path.exists(processed_path):
             os.remove(processed_path)
 
+# ⬇️ ESTE BLOQUE FINAL ES EL CRÍTICO EN RENDER
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
