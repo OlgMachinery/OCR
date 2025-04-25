@@ -35,7 +35,6 @@ def ocr():
         processed_path = img_path.replace(".png", "_processed.png")
         cv2.imwrite(processed_path, thresh)
 
-        # 👇 Soporte para OCR en Español e Inglés
         text = pytesseract.image_to_string(processed_path, lang='spa+eng')
 
         return jsonify({"text": text.strip()})
@@ -51,7 +50,8 @@ def ocr():
         if processed_path and os.path.exists(processed_path):
             os.remove(processed_path)
 
-# ⬇️ EJECUCIÓN FLASK PARA RENDER
+# ⬇️ ESTE BLOQUE FINAL ES EL CRÍTICO EN RENDER
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
