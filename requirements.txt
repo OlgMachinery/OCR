@@ -1,4 +1,4 @@
-Flask
-opencv-python
+flask
+opencv-python-headless
 pytesseract
-Pillow
+gunicorn
