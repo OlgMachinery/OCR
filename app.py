@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 import cv2
-import pytesseract
 import tempfile
 import os
 import traceback
+import base64
+import requests
 
 app = Flask(__name__)
 
@@ -24,6 +25,7 @@ def ocr():
         img_path = temp.name
         img_file.save(img_path)
 
+        # Procesamiento con OpenCV
         image = cv2.imread(img_path)
         if image is None:
             raise Exception("Failed to read image with OpenCV")
@@ -35,8 +37,26 @@ def ocr():
         processed_path = img_path.replace(".png", "_processed.png")
         cv2.imwrite(processed_path, thresh)
 
-        text = pytesseract.image_to_string(processed_path, lang='spa+eng')
+        # Convertir a base64
+        with open(processed_path, "rb") as f:
+            encoded_image = base64.b64encode(f.read()).decode("utf-8")
 
+        # CLAVE incrustada (solo para uso privado)
+        api_key = 'AIzaSyCEUciixN-yfxSIPrw0_UqNIKCwS41WWFU'
+
+        # Enviar a Google Cloud Vision
+        url = f"https://vision.googleapis.com/v1/images:annotate?key={api_key}"
+        body = {
+            "requests": [{
+                "image": {"content": encoded_image},
+                "features": [{"type": "TEXT_DETECTION"}]
+            }]
+        }
+
+        response = requests.post(url, json=body)
+        result = response.json()
+
+        text = result['responses'][0].get('fullTextAnnotation', {}).get('text', '')
         return jsonify({"text": text.strip()})
 
     except Exception as e:
@@ -50,8 +70,7 @@ def ocr():
         if processed_path and os.path.exists(processed_path):
             os.remove(processed_path)
 
-# ⬇️ ESTE BLOQUE FINAL ES EL CRÍTICO EN RENDER
+# Compatible con Render o ejecución local
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
